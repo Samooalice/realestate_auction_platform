@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}오시는 길 - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">오시는 길</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">홈</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'company:about' %}">회사소개</a></li>
+                <li class="breadcrumb-item active">오시는 길</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        {% for location in locations %}
+        <div class="row g-5 {% if not forloop.first %}mt-5 pt-5 border-top{% endif %}" data-aos="fade-up">
+            <div class="col-lg-6">
+                <div class="ratio ratio-4x3 rounded overflow-hidden shadow">
+                    <iframe
+                        src="https://maps.google.com/maps?q={{ location.latitude }},{{ location.longitude }}&z=16&output=embed"
+                        style="border:0;"
+                        allowfullscreen=""
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <h3 class="mb-4">
+                    {{ location.name }}
+                    {% if location.is_main %}<span class="badge bg-primary ms-2">본사</span>{% endif %}
+                </h3>
+                <ul class="list-unstyled">
+                    <li class="mb-3 d-flex">
+                        <i class="bi bi-geo-alt text-primary me-3 fs-5"></i>
+                        <div>
+                            <strong>주소</strong><br>
+                            <span class="text-muted">{{ location.address }}</span>
+                        </div>
+                    </li>
+                    <li class="mb-3 d-flex">
+                        <i class="bi bi-telephone text-primary me-3 fs-5"></i>
+                        <div>
+                            <strong>전화</strong><br>
+                            <span class="text-muted">{{ location.phone }}</span>
+                        </div>
+                    </li>
+                    {% if location.fax %}
+                    <li class="mb-3 d-flex">
+                        <i class="bi bi-printer text-primary me-3 fs-5"></i>
+                        <div>
+                            <strong>팩스</strong><br>
+                            <span class="text-muted">{{ location.fax }}</span>
+                        </div>
+                    </li>
+                    {% endif %}
+                    {% if location.email %}
+                    <li class="mb-3 d-flex">
+                        <i class="bi bi-envelope text-primary me-3 fs-5"></i>
+                        <div>
+                            <strong>이메일</strong><br>
+                            <span class="text-muted">{{ location.email }}</span>
+                        </div>
+                    </li>
+                    {% endif %}
+                    {% if location.parking_info %}
+                    <li class="mb-3 d-flex">
+                        <i class="bi bi-car-front text-primary me-3 fs-5"></i>
+                        <div>
+                            <strong>주차안내</strong><br>
+                            <span class="text-muted">{{ location.parking_info }}</span>
+                        </div>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="bi bi-geo-alt text-muted" style="font-size: 4rem;"></i>
+            <p class="text-muted mt-3">등록된 위치 정보가 없습니다.</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

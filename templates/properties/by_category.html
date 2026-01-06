@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}{{ category.name }} - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">{{ category.name }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">홈</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'properties:list' %}">추천물건</a></li>
+                <li class="breadcrumb-item active">{{ category.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        {% if category.description %}
+        <p class="lead text-muted text-center mb-5">{{ category.description }}</p>
+        {% endif %}
+
+        <div class="row g-4">
+            {% for property in properties %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="card property-card h-100">
+                    {% if property.is_recommended %}
+                    <div class="property-badge">
+                        <span class="badge bg-danger">추천</span>
+                    </div>
+                    {% endif %}
+                    {% if property.thumbnail %}
+                    <img src="{{ property.thumbnail.url }}" class="card-img-top" alt="{{ property.title }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <span class="badge bg-primary mb-2">{{ property.get_property_type_display }}</span>
+                        <h5 class="card-title">{{ property.title|truncatechars:30 }}</h5>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-geo-alt me-1"></i>{{ property.address|truncatechars:25 }}
+                        </p>
+                        <div class="property-price mb-2">
+                            최저가 {{ property.minimum_price|floatformat:0 }}원
+                        </div>
+                        <div class="property-info">
+                            <span><i class="bi bi-calendar3 me-1"></i>{{ property.auction_date|date:"m/d" }}</span>
+                            <span><i class="bi bi-eye me-1"></i>{{ property.view_count }}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <a href="{% url 'properties:detail' property.pk %}" class="btn btn-primary w-100">상세보기</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-house text-muted" style="font-size: 4rem;"></i>
+                <p class="text-muted mt-3">해당 카테고리에 물건이 없습니다.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if properties.has_other_pages %}
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if properties.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ properties.previous_page_number }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                {% for num in properties.paginator.page_range %}
+                    {% if properties.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > properties.number|add:'-3' and num < properties.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if properties.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ properties.next_page_number }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

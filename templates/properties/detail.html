@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}{{ property.title }} - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">물건 상세</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">홈</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'properties:list' %}">추천물건</a></li>
+                <li class="breadcrumb-item active">{{ property.title|truncatechars:20 }}</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Images -->
+                <div class="mb-4">
+                    {% if property.thumbnail %}
+                    <img src="{{ property.thumbnail.url }}" alt="{{ property.title }}" class="img-fluid rounded w-100" style="max-height: 500px; object-fit: cover;">
+                    {% else %}
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 400px;">
+                        <i class="bi bi-image text-muted" style="font-size: 5rem;"></i>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if images %}
+                <div class="row g-2 mb-4">
+                    {% for img in images %}
+                    <div class="col-3">
+                        <img src="{{ img.image.url }}" alt="{{ img.caption }}" class="img-fluid rounded" style="height: 100px; width: 100%; object-fit: cover;">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Property Info -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">물건 정보</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <small class="text-muted">사건번호</small>
+                                <p class="mb-0 fw-bold">{{ property.case_number }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">물건유형</small>
+                                <p class="mb-0 fw-bold">{{ property.get_property_type_display }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">관할법원</small>
+                                <p class="mb-0">{{ property.court }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">입찰일</small>
+                                <p class="mb-0 fw-bold text-primary">{{ property.auction_date|date:"Y년 m월 d일" }}</p>
+                            </div>
+                            <div class="col-12">
+                                <small class="text-muted">소재지</small>
+                                <p class="mb-0">{{ property.address }}</p>
+                            </div>
+                            {% if property.area_land %}
+                            <div class="col-md-6">
+                                <small class="text-muted">대지면적</small>
+                                <p class="mb-0">{{ property.area_land }}㎡</p>
+                            </div>
+                            {% endif %}
+                            {% if property.area_building %}
+                            <div class="col-md-6">
+                                <small class="text-muted">건물면적</small>
+                                <p class="mb-0">{{ property.area_building }}㎡</p>
+                            </div>
+                            {% endif %}
+                            {% if property.floor_info %}
+                            <div class="col-md-6">
+                                <small class="text-muted">층수</small>
+                                <p class="mb-0">{{ property.floor_info }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rights Analysis -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">권리분석</h5>
+                        <span class="badge bg-{% if property.risk_level == 'A' %}success{% elif property.risk_level == 'B' %}warning{% else %}danger{% endif %} fs-6">
+                            {{ property.get_risk_level_display }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        {{ property.rights_analysis|linebreaks }}
+                    </div>
+                </div>
+
+                {% if property.tenant_info %}
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">임차인 현황</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ property.tenant_info|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if property.special_conditions %}
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">특이사항</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ property.special_conditions|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="sticky-top" style="top: 100px;">
+                    <div class="card shadow mb-4">
+                        <div class="card-body p-4">
+                            <h4 class="mb-4">{{ property.title }}</h4>
+
+                            <div class="mb-3 pb-3 border-bottom">
+                                <small class="text-muted">감정가</small>
+                                <p class="mb-0 fs-5">{{ property.appraisal_price|floatformat:0 }}원</p>
+                            </div>
+
+                            <div class="mb-3 pb-3 border-bottom">
+                                <small class="text-muted">최저가</small>
+                                <p class="mb-0 fs-4 fw-bold text-primary">{{ property.minimum_price|floatformat:0 }}원</p>
+                            </div>
+
+                            {% if property.market_price %}
+                            <div class="mb-3 pb-3 border-bottom">
+                                <small class="text-muted">시세</small>
+                                <p class="mb-0">{{ property.market_price|floatformat:0 }}원</p>
+                                <small class="text-success">시세 대비 {{ property.discount_rate }}% 할인</small>
+                            </div>
+                            {% endif %}
+
+                            <div class="mb-4">
+                                <small class="text-muted">유찰횟수</small>
+                                <p class="mb-0">{{ property.bid_count }}회</p>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'consultation:form' %}" class="btn btn-primary btn-lg">
+                                    이 물건 상담받기
+                                </a>
+                                {% if user.is_authenticated %}
+                                <button type="button" class="btn btn-outline-{% if is_bookmarked %}danger{% else %}secondary{% endif %}"
+                                        onclick="toggleBookmark({{ property.pk }})" data-bookmark="{{ property.pk }}">
+                                    <i class="bi bi-heart{% if is_bookmarked %}-fill{% endif %} me-2"></i>
+                                    {% if is_bookmarked %}관심 해제{% else %}관심 등록{% endif %}
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <p class="text-muted mb-2">이 물건에 대해 궁금하신가요?</p>
+                            <p class="fw-bold fs-5 mb-0">
+                                <i class="bi bi-telephone me-2"></i>{{ CONTACT_PHONE }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Properties -->
+        {% if related_properties %}
+        <div class="mt-5 pt-5 border-top">
+            <h4 class="mb-4">관련 물건</h4>
+            <div class="row g-4">
+                {% for prop in related_properties %}
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100">
+                        {% if prop.thumbnail %}
+                        <img src="{{ prop.thumbnail.url }}" class="card-img-top" alt="{{ prop.title }}" style="height: 150px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h6 class="card-title">{{ prop.title|truncatechars:25 }}</h6>
+                            <p class="text-primary fw-bold mb-0">{{ prop.minimum_price|floatformat:0 }}원</p>
+                        </div>
+                        <a href="{% url 'properties:detail' prop.pk %}" class="stretched-link"></a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

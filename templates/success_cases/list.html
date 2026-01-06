@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}성공사례 - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">성공사례</h1>
+        <p class="text-white-50 mb-0">실제 고객들의 성공적인 경매 낙찰 스토리</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <!-- Category Filter -->
+        <div class="d-flex justify-content-center gap-2 flex-wrap mb-5" data-aos="fade-up">
+            <a href="{% url 'success_cases:list' %}"
+               class="btn {% if not request.GET.category %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                전체
+            </a>
+            {% for category in categories %}
+            <a href="?category={{ category.slug }}"
+               class="btn {% if request.GET.category == category.slug %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                {{ category.name }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Cases Grid -->
+        <div class="row g-4">
+            {% for case in cases %}
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|multiply:100 }}">
+                <div class="card h-100">
+                    {% if case.thumbnail %}
+                    <img src="{{ case.thumbnail.url }}" class="card-img-top" alt="{{ case.title }}" style="height: 220px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 220px;">
+                        <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <span class="badge bg-primary mb-2">{{ case.property_type }}</span>
+                        <h5 class="card-title">{{ case.title }}</h5>
+                        <p class="text-muted small mb-3">
+                            <i class="bi bi-geo-alt me-1"></i>{{ case.location }}
+                        </p>
+                        <div class="row text-center g-0 border-top pt-3">
+                            <div class="col-4 border-end">
+                                <small class="text-muted d-block">낙찰가</small>
+                                <strong class="text-primary">{{ case.winning_price|floatformat:0 }}원</strong>
+                            </div>
+                            <div class="col-4 border-end">
+                                <small class="text-muted d-block">시세</small>
+                                <strong>{{ case.market_price|floatformat:0 }}원</strong>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">수익률</small>
+                                <strong class="text-gold">+{{ case.profit_rate }}%</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <a href="{% url 'success_cases:detail' case.pk %}" class="btn btn-outline-primary w-100">
+                            자세히 보기
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-folder-x text-muted" style="font-size: 4rem;"></i>
+                <p class="text-muted mt-3">등록된 성공사례가 없습니다.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if cases.has_other_pages %}
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if cases.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ cases.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in cases.paginator.page_range %}
+                    {% if cases.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > cases.number|add:'-3' and num < cases.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if cases.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ cases.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="section bg-gradient-primary text-white">
+    <div class="container text-center">
+        <h2 class="mb-3" data-aos="fade-up">나도 성공 투자자가 되고 싶다면?</h2>
+        <p class="mb-4 opacity-75" data-aos="fade-up" data-aos-delay="100">
+            전문 컨설턴트와 함께 안전하고 수익성 높은 경매 투자를 시작하세요
+        </p>
+        <a href="{% url 'consultation:form' %}" class="btn btn-gold btn-lg" data-aos="fade-up" data-aos-delay="200">
+            무료 상담신청 <i class="bi bi-arrow-right ms-2"></i>
+        </a>
+    </div>
+</section>
+{% endblock %}

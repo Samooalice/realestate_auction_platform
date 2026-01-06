@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}진행절차 - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">진행절차</h1>
+        <p class="text-white-50 mb-0">체계적인 컨설팅 프로세스</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                {% for step in steps %}
+                <div class="process-step" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|multiply:100 }}">
+                    <div class="process-number">{{ step.step_number }}</div>
+                    <h4>{{ step.title }}</h4>
+                    <p class="text-muted mb-0">{{ step.description }}</p>
+                </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <i class="bi bi-diagram-3 text-muted" style="font-size: 4rem;"></i>
+                    <p class="text-muted mt-3">등록된 프로세스가 없습니다.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="text-center mt-5" data-aos="fade-up">
+            <h4>지금 바로 시작하세요</h4>
+            <p class="text-muted mb-4">전문 컨설턴트가 처음부터 끝까지 함께합니다.</p>
+            <a href="{% url 'consultation:form' %}" class="btn btn-primary btn-lg">무료 상담 신청</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

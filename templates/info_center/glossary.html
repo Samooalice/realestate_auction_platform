@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}경매 용어 사전 - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">경매 용어 사전</h1>
+        <p class="text-white-50 mb-0">경매에서 자주 사용되는 용어들을 알아보세요</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <!-- Search -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-6">
+                <form method="get" action="">
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-lg" name="q" placeholder="용어 검색..." value="{{ request.GET.q }}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Index Letters -->
+        <div class="text-center mb-5">
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <a href="?letter=" class="btn btn-sm {% if not request.GET.letter %}btn-primary{% else %}btn-outline-primary{% endif %}">전체</a>
+                {% for letter in index_letters %}
+                <a href="?letter={{ letter }}" class="btn btn-sm {% if request.GET.letter == letter %}btn-primary{% else %}btn-outline-primary{% endif %}">{{ letter }}</a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Terms List -->
+        <div class="row g-4">
+            {% for term in terms %}
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|multiply:50 }}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">{{ term.term }}</h5>
+                            {% if term.english_term %}
+                            <span class="badge bg-light text-muted">{{ term.english_term }}</span>
+                            {% endif %}
+                        </div>
+                        <p class="card-text text-muted">{{ term.definition }}</p>
+                        {% if term.example %}
+                        <div class="bg-light rounded p-3 mt-3">
+                            <small class="text-muted"><strong>예시:</strong> {{ term.example }}</small>
+                        </div>
+                        {% endif %}
+                        {% if term.related_terms %}
+                        <div class="mt-3">
+                            <small class="text-muted">관련 용어:</small>
+                            {% for related in term.related_terms %}
+                            <a href="?q={{ related }}" class="badge bg-secondary text-decoration-none ms-1">{{ related }}</a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-book text-muted" style="font-size: 4rem;"></i>
+                {% if request.GET.q %}
+                <h4 class="mt-3">"{{ request.GET.q }}"에 대한 검색 결과가 없습니다</h4>
+                <p class="text-muted">다른 검색어를 입력해보세요.</p>
+                {% else %}
+                <h4 class="mt-3">등록된 용어가 없습니다</h4>
+                <p class="text-muted">곧 용어 사전이 업데이트될 예정입니다.</p>
+                {% endif %}
+                <a href="{% url 'info_center:glossary' %}" class="btn btn-primary">전체 보기</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if terms.has_other_pages %}
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if terms.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ terms.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.letter %}&letter={{ request.GET.letter }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                {% for num in terms.paginator.page_range %}
+                    {% if terms.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > terms.number|add:'-3' and num < terms.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.letter %}&letter={{ request.GET.letter }}{% endif %}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if terms.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ terms.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.letter %}&letter={{ request.GET.letter }}{% endif %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        <!-- CTA -->
+        <div class="text-center mt-5 pt-4 border-top">
+            <h5>경매에 대해 더 알고 싶으신가요?</h5>
+            <p class="text-muted mb-3">전문 컨설턴트에게 무료로 상담받아보세요.</p>
+            <a href="{% url 'consultation:form' %}" class="btn btn-primary">무료 상담 신청</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

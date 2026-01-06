@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}전문가 소개 - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">전문가 소개</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">홈</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'company:about' %}">회사소개</a></li>
+                <li class="breadcrumb-item active">전문가 소개</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row g-4">
+            {% for expert in experts %}
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|multiply:100 }}">
+                <div class="card h-100 text-center">
+                    {% if expert.photo %}
+                    <img src="{{ expert.photo.url }}" class="card-img-top" alt="{{ expert.name }}" style="height: 300px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+                        <i class="bi bi-person text-muted" style="font-size: 5rem;"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h4 class="card-title mb-1">{{ expert.name }}</h4>
+                        <p class="text-primary mb-3">{{ expert.position }}</p>
+                        <p class="text-muted small mb-3">{{ expert.specialty }}</p>
+                        {% if expert.certifications %}
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <strong>자격증:</strong><br>
+                                {{ expert.certifications|linebreaks }}
+                            </small>
+                        </div>
+                        {% endif %}
+                        {% if expert.introduction %}
+                        <p class="card-text">{{ expert.introduction|truncatechars:100 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-people text-muted" style="font-size: 4rem;"></i>
+                <p class="text-muted mt-3">등록된 전문가가 없습니다.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
