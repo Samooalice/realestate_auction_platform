@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}아카데미 - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">경매 아카데미</h1>
+        <p class="text-white-50 mb-0">전문가와 함께하는 체계적인 경매 교육</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <!-- Filter -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'academy:list' %}"
+                   class="btn {% if not request.GET.category %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    전체
+                </a>
+                {% for category in categories %}
+                <a href="?category={{ category.slug }}"
+                   class="btn {% if request.GET.category == category.slug %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    {{ category.name }}
+                </a>
+                {% endfor %}
+            </div>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="enrollingOnly"
+                       {% if request.GET.enrolling %}checked{% endif %}
+                       onchange="location.href='{% url 'academy:list' %}{% if not request.GET.enrolling %}?enrolling=1{% endif %}'">
+                <label class="form-check-label" for="enrollingOnly">모집중인 과정만</label>
+            </div>
+        </div>
+
+        <!-- Course Grid -->
+        <div class="row g-4">
+            {% for course in courses %}
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|multiply:100 }}">
+                <div class="card h-100">
+                    <div class="position-relative">
+                        {% if course.thumbnail %}
+                        <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.title }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-gradient-primary d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="bi bi-mortarboard text-white" style="font-size: 4rem;"></i>
+                        </div>
+                        {% endif %}
+                        {% if not course.is_enrolling %}
+                        <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
+                            <span class="badge bg-secondary fs-5 px-4 py-2">모집 마감</span>
+                        </div>
+                        {% elif course.is_full %}
+                        <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
+                            <span class="badge bg-danger fs-5 px-4 py-2">정원 마감</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        {% if course.category %}
+                        <span class="badge bg-primary mb-2">{{ course.category.name }}</span>
+                        {% endif %}
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        {% if course.subtitle %}
+                        <p class="text-muted small mb-3">{{ course.subtitle }}</p>
+                        {% endif %}
+                        <ul class="list-unstyled small text-muted mb-3">
+                            <li><i class="bi bi-calendar3 me-2"></i>{{ course.start_date|date:"Y.m.d" }} 개강</li>
+                            <li><i class="bi bi-clock me-2"></i>{{ course.duration }}</li>
+                            <li><i class="bi bi-people me-2"></i>정원 {{ course.max_students }}명 (잔여 {{ course.remaining_seats }}석)</li>
+                        </ul>
+                        <div class="d-flex align-items-end justify-content-between">
+                            <div>
+                                {% if course.discount_price %}
+                                <del class="text-muted small">{{ course.price|floatformat:0 }}원</del>
+                                <div class="text-primary fw-bold fs-5">{{ course.discount_price|floatformat:0 }}원</div>
+                                {% else %}
+                                <div class="text-primary fw-bold fs-5">{{ course.price|floatformat:0 }}원</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <a href="{% url 'academy:course_detail' course.pk %}" class="btn btn-primary w-100">
+                            상세 보기
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-calendar-x text-muted" style="font-size: 4rem;"></i>
+                <p class="text-muted mt-3">현재 진행 중인 과정이 없습니다.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Why Academy -->
+<section class="section section-light">
+    <div class="container">
+        <div class="section-header" data-aos="fade-up">
+            <h2 class="section-title">왜 우리 아카데미인가요?</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3" data-aos="fade-up">
+                <div class="text-center">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width: 80px; height: 80px; font-size: 2rem;">
+                        <i class="bi bi-person-video3"></i>
+                    </div>
+                    <h5>현장 전문가 강의</h5>
+                    <p class="text-muted small">실제 경매 현장 경험이 풍부한 전문가의 생생한 강의</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="text-center">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width: 80px; height: 80px; font-size: 2rem;">
+                        <i class="bi bi-journal-text"></i>
+                    </div>
+                    <h5>실전 중심 커리큘럼</h5>
+                    <p class="text-muted small">실제 사례 분석과 실습을 통한 실전 능력 배양</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="text-center">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width: 80px; height: 80px; font-size: 2rem;">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h5>소수 정예 수업</h5>
+                    <p class="text-muted small">소수 인원 운영으로 집중적이고 개인화된 교육</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="text-center">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width: 80px; height: 80px; font-size: 2rem;">
+                        <i class="bi bi-chat-dots"></i>
+                    </div>
+                    <h5>수료 후 멘토링</h5>
+                    <p class="text-muted small">수료 후에도 지속적인 상담 및 멘토링 지원</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

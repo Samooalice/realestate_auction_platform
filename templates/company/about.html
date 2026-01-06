@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}회사소개 - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">회사소개</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">홈</a></li>
+                <li class="breadcrumb-item active">회사소개</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<!-- Company Overview -->
+<section class="section">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <h2 class="section-title">신뢰할 수 있는<br>부동산 경매 전문 파트너</h2>
+                <p class="lead text-muted mb-4">
+                    {{ company.vision|default:"고객의 성공적인 부동산 투자를 위해 최선을 다합니다." }}
+                </p>
+                <p class="mb-4">
+                    {{ company.mission|default:"15년 이상의 경험과 전문성을 바탕으로, 안전하고 수익성 높은 경매 투자를 지원합니다. 철저한 권리분석과 맞춤형 컨설팅으로 고객의 소중한 자산을 보호합니다." }}
+                </p>
+                <a href="{% url 'consultation:form' %}" class="btn btn-primary btn-lg">
+                    상담 신청하기
+                </a>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <img src="{% static 'images/company-about.jpg' %}" alt="회사 소개" class="img-fluid rounded shadow">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Achievements -->
+{% if achievements %}
+<section class="section section-light">
+    <div class="container">
+        <div class="row g-4 text-center">
+            {% for achievement in achievements %}
+            <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|multiply:100 }}">
+                <div class="stat-box">
+                    <div class="stat-number">{{ achievement.value }}</div>
+                    <div class="stat-label">{{ achievement.title }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Core Values -->
+<section class="section">
+    <div class="container">
+        <div class="section-header" data-aos="fade-up">
+            <h2 class="section-title">핵심 가치</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="service-card h-100">
+                    <div class="service-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h4>신뢰</h4>
+                    <p class="text-muted">철저한 권리분석과 투명한 정보 제공으로 고객의 신뢰를 최우선으로 합니다.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="service-card h-100">
+                    <div class="service-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h4>전문성</h4>
+                    <p class="text-muted">풍부한 경험과 전문 지식을 바탕으로 최적의 솔루션을 제공합니다.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="service-card h-100">
+                    <div class="service-icon">
+                        <i class="bi bi-heart"></i>
+                    </div>
+                    <h4>고객중심</h4>
+                    <p class="text-muted">고객의 성공이 곧 우리의 성공입니다. 맞춤형 서비스로 함께합니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Experts Preview -->
+{% if experts %}
+<section class="section section-light">
+    <div class="container">
+        <div class="section-header" data-aos="fade-up">
+            <h2 class="section-title">전문가 팀</h2>
+            <p class="section-subtitle">경험과 전문성을 갖춘 컨설턴트가 함께합니다</p>
+        </div>
+        <div class="row g-4">
+            {% for expert in experts %}
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|multiply:100 }}">
+                <div class="card text-center h-100">
+                    {% if expert.photo %}
+                    <img src="{{ expert.photo.url }}" class="card-img-top" alt="{{ expert.name }}" style="height: 250px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="bi bi-person text-muted" style="font-size: 4rem;"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title mb-1">{{ expert.name }}</h5>
+                        <p class="text-muted small mb-2">{{ expert.position }}</p>
+                        <p class="small">{{ expert.specialty }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4" data-aos="fade-up">
+            <a href="{% url 'company:experts' %}" class="btn btn-outline-primary">전문가 전체 보기</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

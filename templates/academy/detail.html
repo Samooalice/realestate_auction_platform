@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}{{ course.title }} - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">강의 상세</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">홈</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'academy:list' %}">아카데미</a></li>
+                <li class="breadcrumb-item active">{{ course.title|truncatechars:20 }}</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Course Image -->
+                {% if course.thumbnail %}
+                <div class="mb-4">
+                    <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" class="img-fluid rounded w-100" style="max-height: 400px; object-fit: cover;">
+                </div>
+                {% endif %}
+
+                <!-- Course Title -->
+                <div class="mb-4">
+                    <span class="badge bg-primary mb-2">{{ course.get_category_display }}</span>
+                    {% if course.is_new %}
+                    <span class="badge bg-success mb-2">NEW</span>
+                    {% endif %}
+                    <h2>{{ course.title }}</h2>
+                    <p class="text-muted">{{ course.subtitle }}</p>
+                </div>
+
+                <!-- Course Info Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3 col-6">
+                        <div class="card bg-light text-center">
+                            <div class="card-body py-3">
+                                <i class="bi bi-clock text-primary fs-4"></i>
+                                <p class="mb-0 small text-muted mt-2">총 시간</p>
+                                <strong>{{ course.duration }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="card bg-light text-center">
+                            <div class="card-body py-3">
+                                <i class="bi bi-collection-play text-primary fs-4"></i>
+                                <p class="mb-0 small text-muted mt-2">강의 수</p>
+                                <strong>{{ course.lecture_count }}개</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="card bg-light text-center">
+                            <div class="card-body py-3">
+                                <i class="bi bi-bar-chart text-primary fs-4"></i>
+                                <p class="mb-0 small text-muted mt-2">난이도</p>
+                                <strong>{{ course.get_level_display }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="card bg-light text-center">
+                            <div class="card-body py-3">
+                                <i class="bi bi-people text-primary fs-4"></i>
+                                <p class="mb-0 small text-muted mt-2">수강생</p>
+                                <strong>{{ course.student_count }}명</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course Description -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">강의 소개</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ course.description|linebreaks }}
+                    </div>
+                </div>
+
+                <!-- What You'll Learn -->
+                {% if course.learning_points %}
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">이런 것을 배워요</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            {% for point in course.learning_points %}
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                {{ point }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Curriculum -->
+                {% if curriculum %}
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">커리큘럼</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="accordion" id="curriculumAccordion">
+                            {% for section in curriculum %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#section{{ forloop.counter }}">
+                                        {{ section.title }}
+                                        <span class="badge bg-secondary ms-2">{{ section.lectures|length }}개</span>
+                                    </button>
+                                </h2>
+                                <div id="section{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#curriculumAccordion">
+                                    <div class="accordion-body p-0">
+                                        <ul class="list-group list-group-flush">
+                                            {% for lecture in section.lectures %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span>
+                                                    <i class="bi bi-play-circle me-2 text-muted"></i>
+                                                    {{ lecture.title }}
+                                                </span>
+                                                <span class="text-muted small">{{ lecture.duration }}</span>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Instructor -->
+                {% if course.instructor %}
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">강사 소개</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex">
+                            {% if course.instructor.photo %}
+                            <img src="{{ course.instructor.photo.url }}" alt="{{ course.instructor.name }}" class="rounded-circle me-4" style="width: 80px; height: 80px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-4" style="width: 80px; height: 80px;">
+                                <span class="fs-3">{{ course.instructor.name|slice:":1" }}</span>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="mb-1">{{ course.instructor.name }}</h5>
+                                <p class="text-muted mb-2">{{ course.instructor.title }}</p>
+                                <p class="mb-0 small">{{ course.instructor.bio|truncatechars:150 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="sticky-top" style="top: 100px;">
+                    <div class="card shadow">
+                        <div class="card-body p-4">
+                            <div class="text-center mb-4">
+                                {% if course.discount_price %}
+                                <p class="text-muted mb-0"><del>{{ course.price|floatformat:0 }}원</del></p>
+                                <h3 class="text-primary">{{ course.discount_price|floatformat:0 }}원</h3>
+                                {% else %}
+                                <h3 class="text-primary">{{ course.price|floatformat:0 }}원</h3>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                {% if user.is_authenticated %}
+                                    {% if is_enrolled %}
+                                    <a href="{% url 'academy:my_courses' %}" class="btn btn-success btn-lg">
+                                        <i class="bi bi-play-circle me-2"></i>학습하기
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'academy:enroll' course.pk %}" class="btn btn-primary btn-lg">
+                                        수강 신청
+                                    </a>
+                                    {% endif %}
+                                {% else %}
+                                <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary btn-lg">
+                                    로그인 후 수강신청
+                                </a>
+                                {% endif %}
+                                <button type="button" class="btn btn-outline-secondary" onclick="shareCourse()">
+                                    <i class="bi bi-share me-2"></i>공유하기
+                                </button>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="bi bi-infinity text-primary me-2"></i>
+                                    무제한 수강
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-phone text-primary me-2"></i>
+                                    모바일 수강 가능
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-file-earmark-text text-primary me-2"></i>
+                                    강의자료 제공
+                                </li>
+                                <li>
+                                    <i class="bi bi-award text-primary me-2"></i>
+                                    수료증 발급
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function shareCourse() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ course.title }}',
+            url: window.location.href
+        });
+    } else {
+        navigator.clipboard.writeText(window.location.href);
+        alert('링크가 복사되었습니다.');
+    }
+}
+</script>
+{% endblock %}

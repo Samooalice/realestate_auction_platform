@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}마이페이지 - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">마이페이지</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">홈</a></li>
+                <li class="breadcrumb-item active">마이페이지</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Sidebar -->
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3"
+                             style="width: 80px; height: 80px; font-size: 2rem;">
+                            {{ user.username|slice:":1"|upper }}
+                        </div>
+                        <h5 class="mb-1">{{ user.username }}</h5>
+                        <p class="text-muted small mb-3">{{ user.email }}</p>
+                        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-primary btn-sm">
+                            프로필 수정
+                        </a>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <a href="{% url 'properties:bookmarks' %}" class="text-decoration-none">
+                                <i class="bi bi-heart me-2"></i>관심 물건
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{% url 'academy:my_courses' %}" class="text-decoration-none">
+                                <i class="bi bi-book me-2"></i>수강 내역
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{% url 'accounts:password_change' %}" class="text-decoration-none">
+                                <i class="bi bi-lock me-2"></i>비밀번호 변경
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <!-- Profile Info -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">회원 정보</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">아이디</label>
+                                <p class="mb-0">{{ user.username }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">이메일</label>
+                                <p class="mb-0">{{ user.email }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">연락처</label>
+                                <p class="mb-0">{{ user.phone|default:"-" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">가입일</label>
+                                <p class="mb-0">{{ user.date_joined|date:"Y년 m월 d일" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bookmarks -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">관심 물건</h5>
+                        <a href="{% url 'properties:bookmarks' %}" class="btn btn-sm btn-outline-primary">전체보기</a>
+                    </div>
+                    <div class="card-body">
+                        {% if bookmarks %}
+                        <div class="row g-3">
+                            {% for bookmark in bookmarks %}
+                            <div class="col-md-6">
+                                <div class="d-flex gap-3 p-3 bg-light rounded">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ bookmark.property.title }}</h6>
+                                        <small class="text-muted">{{ bookmark.property.address|truncatechars:30 }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted text-center py-3 mb-0">관심 물건이 없습니다.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Enrollments -->
+                <div class="card">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">수강 내역</h5>
+                        <a href="{% url 'academy:my_courses' %}" class="btn btn-sm btn-outline-primary">전체보기</a>
+                    </div>
+                    <div class="card-body">
+                        {% if enrollments %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>과정명</th>
+                                        <th>결제상태</th>
+                                        <th>신청일</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for enrollment in enrollments %}
+                                    <tr>
+                                        <td>{{ enrollment.course.title }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ enrollment.payment_status|yesno:'success,warning,secondary' }}">
+                                                {{ enrollment.get_payment_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ enrollment.created_at|date:"Y-m-d" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted text-center py-3 mb-0">수강 내역이 없습니다.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

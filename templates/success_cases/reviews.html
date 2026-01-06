@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}고객 후기 - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">고객 후기</h1>
+        <p class="text-white-50 mb-0">실제 고객님들의 생생한 후기</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <!-- Summary Stats -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="card text-center h-100">
+                    <div class="card-body p-4">
+                        <i class="bi bi-star-fill text-warning fs-1 mb-3"></i>
+                        <h3 class="text-primary">{{ average_rating|floatformat:1 }}</h3>
+                        <p class="text-muted mb-0">평균 만족도</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card text-center h-100">
+                    <div class="card-body p-4">
+                        <i class="bi bi-chat-quote text-primary fs-1 mb-3"></i>
+                        <h3 class="text-primary">{{ total_reviews }}</h3>
+                        <p class="text-muted mb-0">총 후기 수</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="card text-center h-100">
+                    <div class="card-body p-4">
+                        <i class="bi bi-emoji-smile text-success fs-1 mb-3"></i>
+                        <h3 class="text-primary">{{ satisfaction_rate }}%</h3>
+                        <p class="text-muted mb-0">고객 만족률</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews List -->
+        <div class="row g-4">
+            {% for review in reviews %}
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|multiply:50 }}">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                    <span class="fw-bold">{{ review.author_name|slice:":1" }}</span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ review.author_name }}</h6>
+                                    <small class="text-muted">{{ review.created_at|date:"Y.m.d" }}</small>
+                                </div>
+                            </div>
+                            <div class="text-warning">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                    <i class="bi bi-star-fill"></i>
+                                    {% else %}
+                                    <i class="bi bi-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% if review.property_type %}
+                        <span class="badge bg-light text-dark mb-2">{{ review.get_property_type_display }}</span>
+                        {% endif %}
+
+                        <p class="text-muted mb-3">{{ review.content }}</p>
+
+                        {% if review.consultant_reply %}
+                        <div class="bg-light rounded p-3 mt-3">
+                            <small class="text-primary fw-bold"><i class="bi bi-reply me-1"></i>컨설턴트 답변</small>
+                            <p class="mb-0 mt-2 small text-muted">{{ review.consultant_reply }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-chat-square-text text-muted" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">등록된 후기가 없습니다</h4>
+                <p class="text-muted">첫 번째 후기의 주인공이 되어보세요!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if reviews.has_other_pages %}
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if reviews.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ reviews.previous_page_number }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                {% for num in reviews.paginator.page_range %}
+                    {% if reviews.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > reviews.number|add:'-3' and num < reviews.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if reviews.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ reviews.next_page_number }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        <!-- CTA -->
+        <div class="text-center mt-5 pt-4 border-top">
+            <h4>성공적인 낙찰의 주인공이 되어보세요</h4>
+            <p class="text-muted mb-4">전문 컨설턴트가 처음부터 끝까지 함께합니다.</p>
+            <a href="{% url 'consultation:form' %}" class="btn btn-primary btn-lg">무료 상담 신청</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

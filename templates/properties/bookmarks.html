@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}관심 물건 - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">관심 물건</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">홈</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'accounts:profile' %}">마이페이지</a></li>
+                <li class="breadcrumb-item active">관심 물건</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row g-4">
+            {% for bookmark in bookmarks %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="card property-card h-100">
+                    {% if bookmark.property.thumbnail %}
+                    <img src="{{ bookmark.property.thumbnail.url }}" class="card-img-top" alt="{{ bookmark.property.title }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <span class="badge bg-primary mb-2">{{ bookmark.property.get_property_type_display }}</span>
+                        <h5 class="card-title">{{ bookmark.property.title|truncatechars:30 }}</h5>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-geo-alt me-1"></i>{{ bookmark.property.address|truncatechars:25 }}
+                        </p>
+                        <div class="property-price mb-2">
+                            최저가 {{ bookmark.property.minimum_price|floatformat:0 }}원
+                        </div>
+                        <div class="property-info">
+                            <span><i class="bi bi-calendar3 me-1"></i>{{ bookmark.property.auction_date|date:"m/d" }}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0 d-flex gap-2">
+                        <a href="{% url 'properties:detail' bookmark.property.pk %}" class="btn btn-primary flex-grow-1">상세보기</a>
+                        <button type="button" class="btn btn-outline-danger"
+                                onclick="toggleBookmark({{ bookmark.property.pk }})"
+                                data-bookmark="{{ bookmark.property.pk }}">
+                            <i class="bi bi-heart-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-heart text-muted" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">관심 물건이 없습니다</h4>
+                <p class="text-muted">마음에 드는 물건을 찾아 관심 등록해보세요.</p>
+                <a href="{% url 'properties:list' %}" class="btn btn-primary">물건 둘러보기</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if bookmarks.has_other_pages %}
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if bookmarks.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookmarks.previous_page_number }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                {% for num in bookmarks.paginator.page_range %}
+                    {% if bookmarks.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > bookmarks.number|add:'-3' and num < bookmarks.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if bookmarks.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookmarks.next_page_number }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

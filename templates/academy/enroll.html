@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}수강신청 - {{ course.title }} - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">수강신청</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">홈</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'academy:list' %}">아카데미</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'academy:detail' course.pk %}">{{ course.title|truncatechars:15 }}</a></li>
+                <li class="breadcrumb-item active">수강신청</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">수강신청 정보</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Course Summary -->
+                        <div class="d-flex mb-4 pb-4 border-bottom">
+                            {% if course.thumbnail %}
+                            <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" class="rounded me-4" style="width: 150px; height: 100px; object-fit: cover;">
+                            {% endif %}
+                            <div>
+                                <span class="badge bg-secondary mb-2">{{ course.get_category_display }}</span>
+                                <h5 class="mb-1">{{ course.title }}</h5>
+                                <p class="text-muted mb-0">{{ course.subtitle }}</p>
+                            </div>
+                        </div>
+
+                        <!-- User Info -->
+                        <h6 class="mb-3"><i class="bi bi-person me-2"></i>수강자 정보</h6>
+                        <div class="bg-light rounded p-3 mb-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <small class="text-muted">이름</small>
+                                    <p class="mb-0 fw-bold">{{ user.name }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted">이메일</small>
+                                    <p class="mb-0">{{ user.email }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted">연락처</small>
+                                    <p class="mb-0">{{ user.phone }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Info -->
+                        <h6 class="mb-3"><i class="bi bi-credit-card me-2"></i>결제 정보</h6>
+                        <form method="post" id="enrollForm">
+                            {% csrf_token %}
+
+                            <div class="mb-4">
+                                <label class="form-label">결제 수단</label>
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <input type="radio" class="btn-check" name="payment_method" id="card" value="card" checked>
+                                        <label class="btn btn-outline-primary w-100 py-3" for="card">
+                                            <i class="bi bi-credit-card-2-front d-block fs-4 mb-1"></i>
+                                            신용카드
+                                        </label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="radio" class="btn-check" name="payment_method" id="bank" value="bank">
+                                        <label class="btn btn-outline-primary w-100 py-3" for="bank">
+                                            <i class="bi bi-bank d-block fs-4 mb-1"></i>
+                                            계좌이체
+                                        </label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="radio" class="btn-check" name="payment_method" id="virtual" value="virtual">
+                                        <label class="btn btn-outline-primary w-100 py-3" for="virtual">
+                                            <i class="bi bi-cash-stack d-block fs-4 mb-1"></i>
+                                            가상계좌
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Coupon -->
+                            <div class="mb-4">
+                                <label class="form-label">쿠폰 코드 (선택)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="coupon_code" placeholder="쿠폰 코드를 입력하세요">
+                                    <button type="button" class="btn btn-outline-secondary">적용</button>
+                                </div>
+                            </div>
+
+                            <!-- Price Summary -->
+                            <div class="bg-light rounded p-4 mb-4">
+                                <h6 class="mb-3">결제 금액</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>강의 금액</span>
+                                    <span>{{ course.price|floatformat:0 }}원</span>
+                                </div>
+                                {% if course.discount_price %}
+                                <div class="d-flex justify-content-between mb-2 text-success">
+                                    <span>할인</span>
+                                    <span>-{{ course.price|add:course.discount_price|floatformat:0 }}원</span>
+                                </div>
+                                {% endif %}
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <strong>총 결제 금액</strong>
+                                    <strong class="text-primary fs-5">
+                                        {% if course.discount_price %}
+                                        {{ course.discount_price|floatformat:0 }}원
+                                        {% else %}
+                                        {{ course.price|floatformat:0 }}원
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <!-- Terms -->
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="agreeTerms" name="agree_terms" required>
+                                    <label class="form-check-label" for="agreeTerms">
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">이용약관</a> 및
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">개인정보처리방침</a>에 동의합니다. (필수)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="agreeRefund" name="agree_refund" required>
+                                    <label class="form-check-label" for="agreeRefund">
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#refundModal">환불정책</a>에 동의합니다. (필수)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Submit -->
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    {% if course.discount_price %}
+                                    {{ course.discount_price|floatformat:0 }}원 결제하기
+                                    {% else %}
+                                    {{ course.price|floatformat:0 }}원 결제하기
+                                    {% endif %}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <p class="text-muted small">
+                        <i class="bi bi-shield-check me-1"></i>
+                        안전한 결제를 위해 SSL 암호화 통신을 사용합니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">이용약관</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>이용약관 내용이 들어갑니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">개인정보처리방침</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>개인정보처리방침 내용이 들어갑니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Refund Modal -->
+<div class="modal fade" id="refundModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">환불정책</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>디지털 콘텐츠 환불 규정</h6>
+                <ul>
+                    <li>결제 후 7일 이내, 강의 진도율 0%인 경우: 전액 환불</li>
+                    <li>결제 후 7일 이내, 강의 진도율 10% 미만인 경우: 90% 환불</li>
+                    <li>결제 후 7일 이내, 강의 진도율 30% 미만인 경우: 70% 환불</li>
+                    <li>결제 후 7일 초과 또는 진도율 30% 이상인 경우: 환불 불가</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

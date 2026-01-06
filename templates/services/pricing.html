@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}이용요금 - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">이용요금</h1>
+        <p class="text-white-50 mb-0">고객 맞춤형 합리적인 요금제</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+            {% for plan in pricing_plans %}
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|multiply:100 }}">
+                <div class="card h-100 {% if plan.is_popular %}border-primary{% endif %}">
+                    {% if plan.is_popular %}
+                    <div class="card-header bg-primary text-white text-center py-2">
+                        <small class="fw-bold">가장 인기있는 요금제</small>
+                    </div>
+                    {% endif %}
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center mb-3">{{ plan.name }}</h4>
+                        <div class="text-center mb-4">
+                            <span class="display-6 fw-bold text-primary">{{ plan.price_display }}</span>
+                        </div>
+                        <p class="text-muted text-center mb-4">{{ plan.target_customers }}</p>
+                        <hr>
+                        <p class="text-muted small mb-4">{{ plan.description }}</p>
+                        {% if plan.features %}
+                        <ul class="list-unstyled">
+                            {% for feature in plan.features %}
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                {{ feature }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-white border-0 p-4">
+                        <a href="{% url 'consultation:form' %}" class="btn {% if plan.is_popular %}btn-primary{% else %}btn-outline-primary{% endif %} w-100">
+                            상담 신청
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-currency-dollar text-muted" style="font-size: 4rem;"></i>
+                <p class="text-muted mt-3">등록된 요금제가 없습니다.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-5 pt-4 border-top">
+            <h5>요금제 관련 문의</h5>
+            <p class="text-muted mb-3">자세한 요금 안내는 전화 또는 상담을 통해 확인하실 수 있습니다.</p>
+            <a href="{% url 'consultation:form' %}" class="btn btn-primary btn-lg">무료 상담 신청</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

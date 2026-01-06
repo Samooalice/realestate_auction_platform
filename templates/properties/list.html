@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}추천 물건 - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">추천 물건</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">홈</a></li>
+                <li class="breadcrumb-item active">추천 물건</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row">
+            <!-- Filters -->
+            <div class="col-lg-3 mb-4 mb-lg-0">
+                <div class="card sticky-top" style="top: 100px;">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">검색 필터</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="get">
+                            <div class="mb-3">
+                                <label class="form-label">카테고리</label>
+                                <select name="category" class="form-select">
+                                    <option value="">전체</option>
+                                    {% for cat in categories %}
+                                    <option value="{{ cat.slug }}" {% if request.GET.category == cat.slug %}selected{% endif %}>
+                                        {{ cat.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">물건유형</label>
+                                <select name="type" class="form-select">
+                                    <option value="">전체</option>
+                                    {% for key, value in property_types %}
+                                    <option value="{{ key }}" {% if request.GET.type == key %}selected{% endif %}>
+                                        {{ value }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">지역</label>
+                                <input type="text" name="region" class="form-control"
+                                       value="{{ request.GET.region }}" placeholder="예: 서울 강남">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">최저가</label>
+                                <input type="number" name="min_price" class="form-control"
+                                       value="{{ request.GET.min_price }}" placeholder="원">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">최고가</label>
+                                <input type="number" name="max_price" class="form-control"
+                                       value="{{ request.GET.max_price }}" placeholder="원">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">검색</button>
+                            <a href="{% url 'properties:list' %}" class="btn btn-outline-secondary w-100 mt-2">초기화</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property List -->
+            <div class="col-lg-9">
+                <!-- Search & Sort -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <span class="text-muted">총 <strong>{{ properties.paginator.count }}</strong>건</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <form method="get" class="d-flex gap-2">
+                            <input type="text" name="search" class="form-control" style="width: 200px;"
+                                   value="{{ request.GET.search }}" placeholder="물건 검색...">
+                            <select name="sort" class="form-select" style="width: 150px;" onchange="this.form.submit()">
+                                <option value="-auction_date" {% if request.GET.sort == '-auction_date' %}selected{% endif %}>최신순</option>
+                                <option value="minimum_price" {% if request.GET.sort == 'minimum_price' %}selected{% endif %}>낮은가격순</option>
+                                <option value="-minimum_price" {% if request.GET.sort == '-minimum_price' %}selected{% endif %}>높은가격순</option>
+                                <option value="-view_count" {% if request.GET.sort == '-view_count' %}selected{% endif %}>조회순</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Property Cards -->
+                <div class="row g-4">
+                    {% for property in properties %}
+                    <div class="col-md-6 col-xl-4" data-aos="fade-up">
+                        <div class="card property-card h-100">
+                            {% if property.is_featured %}
+                            <div class="property-badge">
+                                <span class="badge bg-danger">추천</span>
+                            </div>
+                            {% endif %}
+                            {% if property.thumbnail %}
+                            <img src="{{ property.thumbnail.url }}" class="card-img-top" alt="{{ property.title }}">
+                            {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <span class="badge bg-primary mb-2">{{ property.get_property_type_display }}</span>
+                                <h5 class="card-title">{{ property.title|truncatechars:30 }}</h5>
+                                <p class="text-muted small mb-2">
+                                    <i class="bi bi-geo-alt me-1"></i>{{ property.address|truncatechars:25 }}
+                                </p>
+                                <div class="property-price mb-2">
+                                    최저가 {{ property.minimum_price|floatformat:0 }}원
+                                </div>
+                                <div class="property-info">
+                                    <span><i class="bi bi-calendar3 me-1"></i>{{ property.auction_date|date:"m/d" }}</span>
+                                    <span><i class="bi bi-eye me-1"></i>{{ property.view_count }}</span>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white border-0 d-flex gap-2">
+                                <a href="{% url 'properties:detail' property.pk %}" class="btn btn-primary flex-grow-1">
+                                    상세보기
+                                </a>
+                                {% if user.is_authenticated %}
+                                <button type="button" class="btn btn-outline-danger"
+                                        onclick="toggleBookmark({{ property.pk }})"
+                                        data-bookmark="{{ property.pk }}">
+                                    <i class="bi bi-heart"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+                            <h4 class="mt-3">검색 결과가 없습니다</h4>
+                            <p class="text-muted">다른 검색 조건으로 시도해보세요.</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if properties.has_other_pages %}
+                <nav class="mt-5">
+                    <ul class="pagination justify-content-center">
+                        {% if properties.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ properties.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for num in properties.paginator.page_range %}
+                            {% if properties.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > properties.number|add:'-3' and num < properties.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if properties.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ properties.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
